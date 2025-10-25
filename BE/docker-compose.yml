@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  postgres-auth:
+    image: postgres:16
+    container_name: postgres_auth
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 29102003
+      POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./postgres-data/auth:/var/lib/postgresql/data
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: auth_service
+    depends_on:
+      - postgres-auth
+    environment:
+      DATABASE_URL: "postgresql://postgres:29102003@postgres-auth:5432/postgres?schema=public"
+    ports:
+      - "3001:3001"
+
+    # ✅ Chỉ mount thư mục src để hot reload, không ghi đè node_modules
+    volumes:
+      - ./services/auth-service/src:/app/src
+      - /app/node_modules
+
+    working_dir: /app
+    command: ["sh", "-c", "npx prisma generate && npm run dev"]
