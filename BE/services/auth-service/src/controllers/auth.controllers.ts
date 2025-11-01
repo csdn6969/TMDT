@@ -5,12 +5,13 @@ import { Request, Response } from "express";
 const prisma = new PrismaClient()
 interface RegisterBody{
     email:string,
-    password: string
+    password: string,
+    role: string
 }
 export async function register(req:Request<{}, {}, RegisterBody>,res: Response){
     try{
-        const {email, password} = req.body
-        if(!email || !password){
+        const {email, password, role} = req.body
+        if(!email || !password || !role){
             return res.status(400).json({message: "Thieu email hoac password"})
         }
         const existingUser = await prisma.user.findUnique({where: {email}});
@@ -19,7 +20,7 @@ export async function register(req:Request<{}, {}, RegisterBody>,res: Response){
         }
         const hashed = await hashPassWord(password)
         const user = await prisma.user.create({
-            data:{email, password: hashed},
+            data:{email, password: hashed, role},
         });
         return res.status(200).json({message: "Tao tai khoan thanh cong", user})
     }
@@ -28,6 +29,7 @@ export async function register(req:Request<{}, {}, RegisterBody>,res: Response){
     }
 }
 
-export function login(){
 
+export async function login() {
+    
 }
